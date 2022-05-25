@@ -1,6 +1,14 @@
 import React, { useEffect, useState } from 'react';
 import { useForm, SubmitHandler } from 'react-hook-form';
 import { Link } from 'react-router-dom';
+import firebase from 'src/firebase';
+import {
+  getAuth,
+  createUserWithEmailAndPassword,
+  updateProfile,
+} from 'firebase/auth';
+import { getDatabase, ref, child, set } from 'firebase/database';
+import md5 from 'md5';
 
 type Inputs = {
   email: string;
@@ -18,12 +26,45 @@ const RegisterPage = () => {
   } = useForm<Inputs>();
 
   const [currentPassword, setCurrentPassword] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  const [submitErrorMessage, setSubmitErrorMessage] = useState('');
 
   useEffect(() => {
     setCurrentPassword(watch('password'));
   }, [watch('password')]);
 
-  const onSubmit: SubmitHandler<Inputs> = (data) => console.log(data);
+  const onSubmit: SubmitHandler<Inputs> = async (data) => {
+    try {
+      setIsLoading(true);
+      const createUser = await createUserWithEmailAndPassword(
+        getAuth(),
+        data.email,
+        data.password
+      );
+
+      await updateProfile(createUser.user, {
+        displayName: data.name,
+        photoURL: `https://www.gravatar.com/avatar/${md5(data.email)}?d=mp`,
+      });
+
+      const database = await getDatabase(firebase);
+      const usersRef = await ref(database, 'users');
+      const usersChild = await child(usersRef, createUser.user.uid);
+      await set(usersChild, {
+        name: createUser.user.displayName,
+        image: createUser.user.photoURL,
+      });
+    } catch (err) {
+      if (err instanceof Error) {
+        if (err.message.includes('auth/email-already-in-use')) {
+          setSubmitErrorMessage('이미 사용 중인 아이디(이메일)입니다.');
+        }
+      }
+      console.error;
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   return (
     <div className="auth-wrapper">
@@ -72,8 +113,9 @@ const RegisterPage = () => {
           errors.passwordConfirm.type === 'validate' && (
             <p>비밀번호가 일치하지 않습니다.</p>
           )}
+        {submitErrorMessage && <p>{submitErrorMessage}</p>}
 
-        <input type="submit" value="가입하기" />
+        <input type="submit" disabled={isLoading} value="가입하기" />
 
         <Link style={{ color: 'gray', textDecoration: 'none' }} to="/login">
           <span>이미 계정이 있으신가요?</span>{' '}

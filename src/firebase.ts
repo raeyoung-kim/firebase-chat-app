@@ -1,5 +1,5 @@
 import { initializeApp } from 'firebase/app';
-import { getAnalytics } from 'firebase/analytics';
+// import { getAnalytics } from 'firebase/analytics';
 
 const {
   REACT_APP_FIREBASE_API_KEY,
@@ -9,6 +9,7 @@ const {
   REACT_APP_FIREBASE_MESSAGING_SENDER_ID,
   REACT_APP_FIREBASE_APP_ID,
   REACT_APP_FIREBASE_MEASUREMENT_ID,
+  REACT_APP_FIREBASE_DATABASE_URL,
 } = process.env;
 
 const firebaseConfig = {
@@ -19,9 +20,10 @@ const firebaseConfig = {
   messagingSenderId: REACT_APP_FIREBASE_MESSAGING_SENDER_ID,
   appId: REACT_APP_FIREBASE_APP_ID,
   measurementId: REACT_APP_FIREBASE_MEASUREMENT_ID,
+  databaseURL: REACT_APP_FIREBASE_DATABASE_URL,
 };
 
-const app = initializeApp(firebaseConfig);
-const analytics = getAnalytics(app);
+const firebase = initializeApp(firebaseConfig);
+// const analytics = getAnalytics(firebase);
 
-export default app;
+export default firebase;

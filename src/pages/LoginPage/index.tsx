@@ -1,6 +1,7 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useForm, SubmitHandler } from 'react-hook-form';
 import { Link } from 'react-router-dom';
+import { getAuth, signInWithEmailAndPassword } from 'firebase/auth';
 
 type Inputs = {
   email: string;
@@ -11,13 +12,28 @@ const LoginPage = () => {
   const {
     register,
     handleSubmit,
-    watch,
     formState: { errors },
   } = useForm<Inputs>();
 
-  const onSubmit = () => {
-    console.log('로그인');
+  const [isLoading, setIsLoading] = useState(false);
+  const [submitErrorMessage, setSubmitErrorMessage] = useState('');
+
+  const onSubmit: SubmitHandler<Inputs> = async (data) => {
+    try {
+      setIsLoading(true);
+      await signInWithEmailAndPassword(getAuth(), data.email, data.password);
+    } catch (error) {
+      if (error instanceof Error) {
+        setSubmitErrorMessage(
+          '아이디(로그인 전용 아이디) 또는 비밀번호를 잘못 입력했습니다. 입력하신 내용을 다시 확인해주세요.'
+        );
+      }
+      console.error;
+    } finally {
+      setIsLoading(false);
+    }
   };
+
   return (
     <div>
       <div className="auth-wrapper">
@@ -42,8 +58,8 @@ const LoginPage = () => {
           {errors.password && errors.password.type === 'required' && (
             <p>필수 정보입니다.</p>
           )}
-
-          <input type="submit" value="로그인하기" />
+          {submitErrorMessage && <p>{submitErrorMessage}</p>}
+          <input type="submit" value="로그인하기" disabled={isLoading} />
           <Link style={{ color: 'gray', textDecoration: 'none' }} to="/login">
             <span>계정이 없으신가요?</span>{' '}
             <span style={{ fontWeight: 'bold', textDecoration: 'underline' }}>
