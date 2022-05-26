@@ -1,19 +1,22 @@
-import React, { useState } from 'react';
+import React, { FC, useState } from 'react';
 import { useForm, SubmitHandler } from 'react-hook-form';
 import { Link } from 'react-router-dom';
 import { getAuth, signInWithEmailAndPassword } from 'firebase/auth';
+import { useNavigate } from 'react-router-dom';
 
 type Inputs = {
   email: string;
   password: string;
 };
 
-const LoginPage = () => {
+const LoginPage: FC = () => {
   const {
     register,
     handleSubmit,
     formState: { errors },
   } = useForm<Inputs>();
+
+  const navigate = useNavigate();
 
   const [isLoading, setIsLoading] = useState(false);
   const [submitErrorMessage, setSubmitErrorMessage] = useState('');
@@ -22,6 +25,7 @@ const LoginPage = () => {
     try {
       setIsLoading(true);
       await signInWithEmailAndPassword(getAuth(), data.email, data.password);
+      navigate('/');
     } catch (error) {
       if (error instanceof Error) {
         setSubmitErrorMessage(
@@ -60,7 +64,10 @@ const LoginPage = () => {
           )}
           {submitErrorMessage && <p>{submitErrorMessage}</p>}
           <input type="submit" value="로그인하기" disabled={isLoading} />
-          <Link style={{ color: 'gray', textDecoration: 'none' }} to="/login">
+          <Link
+            style={{ color: 'gray', textDecoration: 'none' }}
+            to="/register"
+          >
             <span>계정이 없으신가요?</span>{' '}
             <span style={{ fontWeight: 'bold', textDecoration: 'underline' }}>
               회원가입 하기

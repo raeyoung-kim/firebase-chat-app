@@ -9,6 +9,7 @@ import {
 } from 'firebase/auth';
 import { getDatabase, ref, child, set } from 'firebase/database';
 import md5 from 'md5';
+import { useNavigate } from 'react-router-dom';
 
 type Inputs = {
   email: string;
@@ -24,6 +25,8 @@ const RegisterPage = () => {
     watch,
     formState: { errors },
   } = useForm<Inputs>();
+
+  const navigate = useNavigate();
 
   const [currentPassword, setCurrentPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -54,6 +57,7 @@ const RegisterPage = () => {
         name: createUser.user.displayName,
         image: createUser.user.photoURL,
       });
+      navigate('/login');
     } catch (err) {
       if (err instanceof Error) {
         if (err.message.includes('auth/email-already-in-use')) {
